@@ -1,0 +1,107 @@
+name: Build Windows Executable (.exe Setup Installer ZIP)
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  build-windows-exe-zip:
+    name: Build Windows .exe Installer & Package ZIP
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            package.json
+
+      - name: Extract app source from archive
+        run: |
+          set -e
+          if [ ! -f hh.zip ]; then
+            echo "hh.zip not found in repository root."
+            exit 1
+          fi
+          rm -rf extracted_app
+          unzip -q -o hh.zip -d .
+          ls -la
+          printf '\n--- app files ---\n'
+          find extracted_app -maxdepth 2 -type f | head -50
+
+      - name: Install dependencies
+        working-directory: extracted_app
+        run: |
+          npm install
+
+      - name: Build web application assets
+        working-directory: extracted_app
+        run: npm run build
+
+      - name: Package Windows installer (.exe) via Electron Builder
+        working-directory: extracted_app
+        run: npx electron-builder --win nsis portable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compress release artifacts into ZIP
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          New-Item -ItemType Directory -Force -Path "release_output" | Out-Null
+
+          if (Test-Path "extracted_app\dist_electron") {
+            Copy-Item -Path "extracted_app\dist_electron\*.exe" -Destination "release_output\" -ErrorAction SilentlyContinue
+          }
+
+          if (Test-Path "extracted_app\dist") {
+            New-Item -ItemType Directory -Force -Path "release_output\web_app" | Out-Null
+            Copy-Item -Path "extracted_app\dist\*" -Destination "release_output\web_app\" -Recurse -ErrorAction SilentlyContinue
+          }
+
+          Compress-Archive -Path "release_output\*" -DestinationPath "ISTEK-Browser-Setup-v1.0.0-Windows-Installer.zip" -Force
+
+      - name: Upload Windows Setup .exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISTEK-Browser-Windows-Exe-Installer
+          path: |
+            release_output/*.exe
+            extracted_app/dist_electron/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload GitHub Actions created ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISTEK-Browser-Setup-v1.0.0-Windows-Installer-ZIP
+          path: ISTEK-Browser-Setup-v1.0.0-Windows-Installer.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish release to GitHub
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: ISTEK Browser v1.0.0
+          generate_release_notes: true
+          files: |
+            extracted_app/dist_electron/*.exe
+            ISTEK-Browser-Setup-v1.0.0-Windows-Installer.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

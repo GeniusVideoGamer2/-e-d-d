@@ -1,0 +1,63 @@
+name: Build Windows Executable (.exe Setup Installer ZIP)
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows-exe-zip:
+    name: Build Windows .exe Installer & Package ZIP
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build Web Application Assets
+        run: npm run build
+
+      - name: Package Windows Installer (.exe) via Electron Builder
+        run: npx electron-builder --win nsis portable
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compress Release Artifacts into ZIP
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path "release_output"
+          if (Test-Path "dist_electron") {
+            Copy-Item -Path "dist_electron\*.exe" -Destination "release_output\" -ErrorAction SilentlyContinue
+          }
+          if (Test-Path "dist") {
+            Copy-Item -Path "dist" -Destination "release_output\web_app" -Recurse -ErrorAction SilentlyContinue
+          }
+          Compress-Archive -Path "release_output\*" -DestinationPath "ISTEK-Browser-Setup-v1.0.0-Windows-Installer.zip" -Force
+
+      - name: Upload Windows Setup .exe Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISTEK-Browser-Windows-Exe-Installer
+          path: |
+            dist_electron/*.exe
+            release_output/*.exe
+          retention-days: 30
+
+      - name: Upload GitHub Actions Created ZIP Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISTEK-Browser-Setup-v1.0.0-Windows-Installer-ZIP
+          path: ISTEK-Browser-Setup-v1.0.0-Windows-Installer.zip
+          retention-days: 30

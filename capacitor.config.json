@@ -1,0 +1,8 @@
+{
+  "appId": "com.istek.browser",
+  "appName": "ISTEK Browser",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

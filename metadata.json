@@ -1,0 +1,6 @@
+{
+  "name": "ISTEK Browser",
+  "description": "Full-featured ISTEK Browser with Shields, ISTEK Search, Leo AI Assistant, and Rewards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

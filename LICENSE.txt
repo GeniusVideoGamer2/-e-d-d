@@ -1,0 +1,24 @@
+===================================================================
+ISTEK BROWSER - END USER LICENSE AGREEMENT (EULA)
+===================================================================
+
+Please read the following license agreement carefully before installing or using ISTEK BROWSER.
+
+1. ACCEPTANCE OF TERMS
+By clicking "I Agree" during the installation process, you agree to be bound by the terms of this license agreement. If you click "I Decline" or "Cancel", the installation process will stop and you will not be able to install ISTEK BROWSER.
+
+2. LICENSE GRANT
+ISTEK BROWSER grants you a personal, non-exclusive, non-transferable license to install and run the software on your Windows personal computer.
+
+3. SECURITY & PRIVACY SHIELD
+ISTEK BROWSER includes high-performance built-in security shields designed to block harmful trackers, cross-origin web vulnerabilities, and unauthorized data collection.
+
+4. INSTALLATION & DESKTOP SHORTCUT
+The setup wizard will allow you to select a custom installation folder on your target drive and automatically create a desktop shortcut titled "ISTEK BROWSER" for quick access.
+
+5. DISCLAIMER OF WARRANTY
+ISTEK BROWSER is provided "AS IS" without warranty of any kind.
+
+===================================================================
+Thank you for choosing ISTEK BROWSER!
+===================================================================
